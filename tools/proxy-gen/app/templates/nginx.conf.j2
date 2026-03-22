@@ -1,0 +1,139 @@
+# =========================
+# Health endpoint
+# =========================
+
+server {
+    listen 127.0.0.1:8080;
+
+    location = /health {
+        access_log off;
+        return 200 "ok\n";
+    }
+}
+
+# =========================
+# HTTP redirect
+# =========================
+
+server {
+    listen 80 default_server;
+    server_name _;
+
+    {% if services | length > 0 %}
+    return 301 https://{{ services[0].host }}$request_uri;
+    {% else %}
+    return 444;
+    {% endif %}
+}
+
+# =========================
+# HTTPS default redirect
+# =========================
+
+server {
+    listen 443 ssl;
+    server_name _;
+
+    {% if certificate.mode == "selfsigned" %}
+    ssl_certificate /etc/nginx/certs/{{ certificate.name }}.crt;
+    ssl_certificate_key /etc/nginx/certs/{{ certificate.name }}.key;
+    {% else %}
+    ssl_certificate /etc/nginx/certs/{{ certificate.cert_file | basename }};
+    ssl_certificate_key /etc/nginx/certs/{{ certificate.key_file | basename }};
+    {% endif %}
+
+    {% if services | length > 0 %}
+    return 301 https://{{ services[0].host }}$request_uri;
+    {% else %}
+    return 444;
+    {% endif %}
+}
+
+# =========================
+# Services
+# =========================
+
+{% for svc in services %}
+
+server {
+
+    listen 443 ssl;
+    server_name {{ svc.host }};
+
+    {% if svc.nolog %}
+    access_log off;
+    {% endif %}
+
+    {% if certificate.mode == "selfsigned" %}
+    ssl_certificate /etc/nginx/certs/{{ certificate.name }}.crt;
+    ssl_certificate_key /etc/nginx/certs/{{ certificate.name }}.key;
+    {% else %}
+    ssl_certificate /etc/nginx/certs/{{ certificate.cert_file | basename }};
+    ssl_certificate_key /etc/nginx/certs/{{ certificate.key_file | basename }};
+    {% endif %}
+
+    resolver 127.0.0.11 valid=30s;
+
+    {% if svc.upload %}
+    client_max_body_size 0;
+    {% else %}
+    client_max_body_size 10m;
+    {% endif %}
+
+    location / {
+
+        {% if svc.requires_auth %}
+        auth_request /authelia;
+        error_page 401 =302 https://{{ auth_domain }}?rd=$scheme://$http_host$request_uri;
+        {% endif %}
+
+        proxy_pass http://{{ svc.container }}:{{ svc.port }};
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_http_version 1.1;
+
+        {% if svc.websocket %}
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        {% endif %}
+
+        proxy_set_header Accept-Encoding "";
+
+        proxy_request_buffering off;
+        proxy_buffering off;
+
+        proxy_read_timeout 3600;
+        proxy_send_timeout 3600;
+    }
+
+    {% if svc.requires_auth %}
+    location = /authelia {
+
+        internal;
+
+        proxy_pass http://{{ auth_service.container }}:{{ auth_service.port }}/api/authz/auth-request;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Original-URL $scheme://$http_host$request_uri;
+        proxy_set_header X-Original-Method $request_method;
+
+        proxy_set_header X-Forwarded-Method $request_method;
+        proxy_set_header Cookie $http_cookie;
+
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Uri $request_uri;
+
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
+    }
+    {% endif %}
+
+}
+
+{% endfor %}
+

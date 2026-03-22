@@ -1,0 +1,48 @@
+server:
+  address: tcp://0.0.0.0:9091
+
+theme: dark
+
+log:
+  level: info
+
+authentication_backend:
+  file:
+    path: /config/users.yml
+
+{% set protected = services | selectattr("requires_auth") | list -%}
+access_control:
+{% if protected %}
+  default_policy: deny
+  rules:
+{% for svc in protected %}
+    - domain:
+        - "{{ svc.host }}"
+      policy: one_factor
+      subject:
+{% for role in svc.allowed_groups %}
+        - 'group:{{ role }}'
+{% endfor %}
+{% endfor %}
+{% else %}
+  default_policy: one_factor
+{% endif %}
+
+session:
+  secret: "{{ session_secret }}"
+  cookies:
+    - domain: "{{ domain }}"
+      authelia_url: "https://{{ auth_domain }}"
+
+identity_validation:
+  reset_password:
+    jwt_secret: "{{ jwt_secret }}"
+
+storage:
+  encryption_key: "{{ storage_key }}"
+  local:
+    path: /config/db/db.sqlite3
+
+notifier:
+  filesystem:
+    filename: /config/notification.txt

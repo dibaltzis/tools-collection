@@ -1,0 +1,12 @@
+users:
+{% for user in users %}
+  {{ user.username }}:
+    displayname: {{ user.username }}
+    email: {{ user.email }}
+    password: {{ user.password_hash }}
+    groups:
+{% for role in user.groups %}
+      - {{ role }}
+{% endfor %}
+
+{% endfor %}

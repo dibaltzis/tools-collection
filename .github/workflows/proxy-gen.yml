@@ -1,0 +1,50 @@
+name: Build and Push proxy-gen
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "tools/proxy-gen/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (for multi-arch)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags)
+        id: meta
+        run: |
+          echo "SHA_TAG=sha-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./tools/proxy-gen
+          file: ./tools/proxy-gen/Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ghcr.io/${{ github.repository }}/proxy-gen:latest
+            ghcr.io/${{ github.repository }}/proxy-gen:${{ steps.meta.outputs.SHA_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

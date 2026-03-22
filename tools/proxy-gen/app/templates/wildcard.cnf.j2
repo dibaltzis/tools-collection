@@ -1,0 +1,18 @@
+[req]
+default_bits = 2048
+prompt = no
+distinguished_name = dn
+x509_extensions = ext
+
+[dn]
+CN = {{ domain }}
+
+[ext]
+subjectAltName = @alt_names
+basicConstraints = CA:FALSE
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+
+[alt_names]
+DNS.1 = {{ domain }}
+DNS.2 = *.{{ domain }}
