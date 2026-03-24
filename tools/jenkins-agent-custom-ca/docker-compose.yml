@@ -1,0 +1,15 @@
+services:
+  jenkins-agent:
+    image: jenkins-docker-agent
+    container_name: jenkins-agent
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./jenkins_agent:/home/jenkins
+    environment:
+      - TZ=Europe/Athens
+      - JENKINS_URL=http://192.168.31.229:8044
+      - JENKINS_AGENT_NAME=fedora-docker
+      - JENKINS_SECRET=REPLACE-WITH-THE-JENKINS-SECRET
+    group_add:
+      - 972  # docker group id on host system
