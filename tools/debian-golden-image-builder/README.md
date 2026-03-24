@@ -1,10 +1,10 @@
-# Debian Golden Image + Clone Scripts
+# debian-golden-image-builder
 
-Scripts to create an immutable Debian golden VM and disposable clone VMs using **libvirt** and **cloud-init**.
+Scripts to create a Debian golden VM and disposable clones using **libvirt** and **cloud-init**.
 
 ---
 
-## Files
+### Files
 
 ```
 .
@@ -16,60 +16,54 @@ Scripts to create an immutable Debian golden VM and disposable clone VMs using *
 
 ---
 
-## Setup
+### Setup
 
-1. Download the Debian cloud image:
-
+1. Download Debian cloud image:
    https://cloud.debian.org/images/cloud/
 
-2. Place the downloaded `.qcow2` file in this directory.
+2. Place the `.qcow2` file in this directory
 
-3. Copy your SSH public key:
-
-   ```
+3. Add your SSH public key:
+   ```bash
    cat ~/.ssh/id_ed25519.pub > id_ed25519.pub
    ```
 
-4. Edit `create-golden-image.sh` and set the following variables:
-
+4. Edit `create-golden-image.sh`:
    - `VM_NAME`
    - `VM_USER`
 
-5. Make the scripts executable:
-
-   ```
+5. Make scripts executable:
+   ```bash
    chmod +x create-golden-image.sh create-clone.sh
    ```
 
 ---
 
-## Create Golden VM (one time)
+### Create golden VM (one-time)
 
-```
+```bash
 sudo ./create-golden-image.sh
 ```
 
-After the VM is created, shut it down:
+Then shut it down:
 
-```
+```bash
 sudo virsh shutdown <VM_NAME>
 ```
 
 ---
 
-## Create Clone VMs
+### Create clones
 
-Example:
-
-```
+```bash
 sudo ./create-clone.sh debian-amd64-dev-01
 sudo ./create-clone.sh debian-amd64-dev-02
 ```
 
 ---
 
-## Rules
+### Rules
 
-- Do **not** log into or modify the golden VM
-- Always shut down the golden VM before cloning
-- Perform all work on clone VMs only
+- Do not modify the golden VM
+- Always shut it down before cloning
+- Work only on clones
