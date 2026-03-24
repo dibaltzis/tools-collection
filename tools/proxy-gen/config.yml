@@ -10,7 +10,7 @@ domain:
 
 certificate:
   mode: selfsigned   # selfsigned | provided
-  name: code-server-cert
+  name: code-server-certificate
 
   # used only if mode=provided
   # those files must be under /nginx/certs/

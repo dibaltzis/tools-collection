@@ -1,0 +1,32 @@
+domain:
+  mode: nip
+  suffix: nip.io
+  ip: 192.168.1.25  #change this to your actual ip.
+
+certificate:
+  mode: selfsigned
+  name: demo-cert
+
+auth_users:
+  demo:
+    username: demo
+    password: demo
+    email: demo@example.com
+    groups:
+      - admins
+
+services:
+  auth:
+    is_auth: true
+    container_name: authelia
+    host_prefix: auth
+    port: 9091
+    requires_auth: false
+
+  static:
+    container_name: static-site
+    host_prefix: app
+    port: 80
+    requires_auth: true
+    allowed_groups:
+      - admins

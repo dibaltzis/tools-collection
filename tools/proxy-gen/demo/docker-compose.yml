@@ -1,0 +1,41 @@
+name: proxy-gen-demo
+
+services:
+  static-site:
+    image: nginx:alpine
+    container_name: static-site
+
+    volumes:
+      - ./static:/usr/share/nginx/html:ro
+
+    networks:
+      - demo-net
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+
+    networks:
+      - demo-net
+
+  authelia:
+    image: authelia/authelia:latest
+    container_name: authelia
+
+    volumes:
+      - ./nginx/authelia:/config
+      - ./nginx/authelia/db:/config/db
+
+    networks:
+      - demo-net
+
+networks:
+  demo-net:
