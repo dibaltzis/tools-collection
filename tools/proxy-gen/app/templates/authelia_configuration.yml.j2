@@ -30,6 +30,10 @@ access_control:
 
 session:
   secret: "{{ session_secret }}"
+    
+  expiration: 3h
+  inactivity: 3h
+
   cookies:
     - domain: "{{ domain }}"
       authelia_url: "https://{{ auth_domain }}"
