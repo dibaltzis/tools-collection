@@ -1,0 +1,14 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+
+# VM images
+*.qcow2
+
+# Ansible
+*.retry
+
+# SSH
+*.pem

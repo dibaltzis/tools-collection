@@ -1,0 +1,8 @@
+---
+kubernetes_pod_network_cidr: "10.244.0.0/16"
+
+kubernetes_cni_version: "v0.27.4"
+
+kubernetes_cni_manifest: "https://github.com/flannel-io/flannel/releases/download/{{ kubernetes_cni_version }}/kube-flannel.yml"
+
+kubernetes_kubeconfig_path: "/etc/kubernetes/admin.conf"

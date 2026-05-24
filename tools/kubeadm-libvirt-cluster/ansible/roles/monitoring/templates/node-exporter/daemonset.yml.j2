@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: DaemonSet
+
+metadata:
+  name: node-exporter
+  namespace: monitoring
+
+spec:
+  selector:
+    matchLabels:
+      app: node-exporter
+
+  template:
+    metadata:
+      labels:
+        app: node-exporter
+
+    spec:
+      hostPID: true
+      hostNetwork: true
+
+      tolerations:
+        - operator: Exists
+
+      containers:
+        - name: node-exporter
+          image: "{{ node_exporter_image }}"
+
+          ports:
+            - containerPort: 9100
+              hostPort: 9100
+
+          args:
+            - --path.rootfs=/host
+
+          volumeMounts:
+            - name: root
+              mountPath: /host
+              readOnly: true
+
+      volumes:
+        - name: root
+          hostPath:
+            path: /

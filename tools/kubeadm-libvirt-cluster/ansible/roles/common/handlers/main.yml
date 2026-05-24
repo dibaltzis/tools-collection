@@ -1,0 +1,8 @@
+---
+- name: Restart containerd
+  ansible.builtin.service:
+    name: containerd
+    state: restarted
+
+- name: Apply sysctl settings
+  ansible.builtin.command: sysctl --system

@@ -1,0 +1,6 @@
+---
+- import_tasks: packages.yml
+- import_tasks: swap.yml
+- import_tasks: networking.yml
+- import_tasks: containerd.yml
+- import_tasks: kubernetes.yml

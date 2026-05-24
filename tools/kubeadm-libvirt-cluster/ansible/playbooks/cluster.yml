@@ -1,0 +1,27 @@
+---
+- hosts: all
+  become: true
+
+  pre_tasks:
+    - name: Wait for SSH connection
+      ansible.builtin.wait_for_connection:
+        timeout: 300
+
+    - name: Wait for cloud-init to finish
+      ansible.builtin.command: cloud-init status --wait
+      changed_when: false
+
+  roles:
+    - common
+    
+- hosts: kube_master
+  become: true
+
+  roles:
+    - master
+
+- hosts: kube_workers
+  become: true
+
+  roles:
+    - worker

@@ -1,0 +1,19 @@
+---
+- name: Check if Kubernetes control plane is already initialized
+  ansible.builtin.stat:
+    path: "{{ kubernetes_kubeconfig_path }}"
+  register: kubernetes_admin_conf
+
+- name: Initialize Kubernetes control plane
+  ansible.builtin.command: >
+    kubeadm init
+    --pod-network-cidr={{ kubernetes_pod_network_cidr }}
+  when: not kubernetes_admin_conf.stat.exists
+  register: kubeadm_init_result
+
+- name: Show kubeadm init output
+  ansible.builtin.debug:
+    var: kubeadm_init_result.stdout_lines
+  when:
+    - kubeadm_init_result is defined
+    - kubeadm_init_result.stdout_lines is defined

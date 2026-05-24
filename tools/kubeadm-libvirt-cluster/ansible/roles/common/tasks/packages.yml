@@ -1,0 +1,34 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+  register: apt_update_result
+  retries: 5
+  delay: 10
+  until: apt_update_result is succeeded
+
+- name: Upgrade packages
+  ansible.builtin.apt:
+    upgrade: dist
+  when: common_upgrade_packages | default(false)
+
+- name: Install common packages
+  ansible.builtin.apt:
+    name:
+      - qemu-guest-agent
+      - curl
+      - wget
+      - git
+      - vim
+      - htop
+      - bash-completion
+      - apt-transport-https
+      - ca-certificates
+      - gpg
+    state: present
+
+- name: Enable qemu guest agent
+  ansible.builtin.service:
+    name: qemu-guest-agent
+    enabled: true
+    state: started
