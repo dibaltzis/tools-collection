@@ -29,9 +29,7 @@ RUN pip install --no-cache-dir \
     jinja2
 
 # Copy app code
-COPY app/core /app/core
-COPY app/main.py /app/main.py
-COPY app/templates /app/templates
+COPY app /app
 
 # Ensure permissions
 RUN chown -R appuser:appuser /app

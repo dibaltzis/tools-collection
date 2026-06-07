@@ -87,7 +87,11 @@ server {
         error_page 401 =302 https://{{ auth_domain }}?rd=$scheme://$http_host$request_uri;
         {% endif %}
 
-        proxy_pass http://{{ svc.container }}:{{ svc.port }};
+        proxy_intercept_errors on;
+        error_page 502 503 504 /errors/service-unavailable.html;
+
+        set $backend http://{{ svc.container }}:{{ svc.port }};
+        proxy_pass $backend;
 
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -110,6 +114,11 @@ server {
         proxy_send_timeout 3600;
     }
 
+    location = /errors/service-unavailable.html {
+        root /etc/nginx/static;
+        internal;
+    }
+    
     {% if svc.requires_auth %}
     location = /authelia {
 

@@ -6,6 +6,7 @@ from core.validate_authelia import validate_authelia_config
 from core.render_cert import render_wildcard_cert_config, generate_selfsigned_cert
 from core.render_nginx import render_nginx_config
 from core.validate_nginx import validate_nginx_config
+from core.copy_static_files import copy_static_files
 
 def main():
     host_base = os.environ.get("HOST_NGINX_PATH")
@@ -63,6 +64,9 @@ def main():
     # --- nginx ---
     os.makedirs(CONF_DIR, exist_ok=True)
     nginx_conf_path = os.path.join(CONF_DIR, "default.conf")
+
+    # --- copy static files ---
+    copy_static_files(src_dir="/app/files/nginx", dst_dir="/app/nginx/static")
 
     render_nginx_config(context, nginx_conf_path)
 
