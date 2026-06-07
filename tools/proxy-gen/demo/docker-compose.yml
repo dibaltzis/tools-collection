@@ -22,6 +22,7 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./nginx/certs:/etc/nginx/certs:ro
+      - ./nginx/static:/etc/nginx/static:ro
 
     networks:
       - demo-net
