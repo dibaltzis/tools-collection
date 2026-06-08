@@ -42,9 +42,9 @@ def main():
     # --- certs ---
     os.makedirs(CERTS_DIR, exist_ok=True)
 
-
+    certificate = context["certificate"]
     # render wildcard if the certificate mode = selfsigned
-    if context["certificate"]["mode"] == "selfsigned":
+    if certificate["mode"] == "selfsigned":
         conf_path = os.path.join(CERTS_DIR, "wildcard.cnf")
 
         # 1. Render config
@@ -52,9 +52,9 @@ def main():
 
         # 2. Generate cert
         generate_selfsigned_cert(context, CERTS_DIR)
-    elif context["certificate"]["mode"] == "provided":
-        cert_path = f"/app/nginx/certs/{certificate['cert_file']}"
-        key_path = f"/app/nginx/certs/{certificate['key_file']}"
+    elif certificate["mode"] == "provided":
+        cert_path = os.path.join(CERTS_DIR, certificate["cert_file"])
+        key_path = os.path.join(CERTS_DIR, certificate["key_file"])
         if not os.path.exists(cert_path):
             raise RuntimeError(f"Certificate not found: {cert_path}")
         if not os.path.exists(key_path):
