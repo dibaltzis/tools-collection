@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Portal</title>
+
+  <link rel="stylesheet" href="/dashboard.css">
+</head>
+<body>
+
+<h1>Service Portal</h1>
+
+<div class="panel top-panel">
+  <div id="clock" class="clock"></div>
+  <div id="date" class="date"></div>
+</div>
+
+<div id="services">
+
+{% for svc in services %}
+
+  <a
+    href="https://{{ svc.host }}"
+    target="_blank"
+    class="service-card">
+
+    <div class="service-name">
+      {{ svc.name }}
+    </div>
+
+    <div class="service-url">
+      https://{{ svc.host }}
+    </div>
+
+  </a>
+
+{% endfor %}
+
+</div>
+
+<div class="collapsible" onclick="toggleInstructions()">
+  ▶ Certificate & Docker Setup Instructions
+</div>
+
+<div id="instructionsContent" class="content">
+  <div class="instructions">
+
+    <h2>Certificate Download</h2>
+
+    <p>
+    <a href="/certificate.crt" download class="download-link">
+        Download Certificate
+    </a>
+    </p>
+
+    {% if certificate.mode == "selfsigned" %}
+
+    <h2>Windows (PowerShell as Administrator)</h2>
+
+<pre>
+Import-Certificate -FilePath certificate.crt `
+  -CertStoreLocation Cert:\LocalMachine\Root
+</pre>
+
+    <h2>Fedora / RHEL</h2>
+
+<pre>
+sudo cp certificate.crt /etc/pki/ca-trust/source/anchors/
+sudo update-ca-trust
+</pre>
+
+    <h2>Debian / Ubuntu</h2>
+
+<pre>
+sudo cp certificate.crt /usr/local/share/ca-certificates/
+sudo update-ca-certificates
+</pre>
+
+    {% endif %}
+
+    <h2>Docker Registry Trust</h2>
+
+    <p>
+      Docker does not use the browser trust store for registries.
+      Install the certificate manually if you are using a private registry.
+    </p>
+
+<pre>
+sudo mkdir -p /etc/docker/certs.d/your-registry
+sudo cp certificate.crt \
+  /etc/docker/certs.d/your-registry/ca.crt
+
+sudo systemctl restart docker
+</pre>
+
+  </div>
+</div>
+
+<footer>
+  Service Portal
+</footer>
+
+<script src="/dashboard.js"></script>
+
+</body>
+</html>

@@ -7,6 +7,16 @@ from core.render_cert import render_wildcard_cert_config, generate_selfsigned_ce
 from core.render_nginx import render_nginx_config
 from core.validate_nginx import validate_nginx_config
 from core.copy_static_files import copy_static_files
+from core.render_dashboard import render_dashboard
+
+
+def get_env_bool(name: str, default: bool = False) -> bool:
+    value = os.environ.get(name)
+
+    if value is None:
+        return default
+
+    return value.lower() == "true"
 
 def main():
     host_base = os.environ.get("HOST_NGINX_PATH")
@@ -15,6 +25,10 @@ def main():
 
     config = load_yaml("config.yml")
     context = build_context(config)
+
+    # dashboard is optional, default = false
+    create_dashboard = get_env_bool("CREATE_DASHBOARD")
+    context["create_dashboard"] = create_dashboard
 
     #print("=== GENERATED CONTEXT ===")
     #pprint(context)
@@ -69,6 +83,9 @@ def main():
     copy_static_files(src_dir="/app/files/nginx", dst_dir="/app/nginx/static")
 
     render_nginx_config(context, nginx_conf_path)
+
+    if create_dashboard:
+        render_dashboard(context, "/app/nginx/static/dashboard")
 
     # --- resolve host paths + validate nginx ---
     nginx_host_conf = os.path.join(host_base, "conf.d", "default.conf")

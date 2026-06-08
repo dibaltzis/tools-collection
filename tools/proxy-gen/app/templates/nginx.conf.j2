@@ -50,6 +50,45 @@ server {
 }
 
 # =========================
+# Dashboard
+# =========================
+
+{% if create_dashboard %}
+
+server {
+
+    listen 443 ssl;
+    server_name dashboard.{{ domain }};
+
+    {% if certificate.mode == "selfsigned" %}
+    ssl_certificate /etc/nginx/certs/{{ certificate.name }}.crt;
+    ssl_certificate_key /etc/nginx/certs/{{ certificate.name }}.key;
+    {% else %}
+    ssl_certificate /etc/nginx/certs/{{ certificate.cert_file | basename }};
+    ssl_certificate_key /etc/nginx/certs/{{ certificate.key_file | basename }};
+    {% endif %}
+
+    root /etc/nginx/static/dashboard;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location = /certificate.crt {
+
+    {% if certificate.mode == "selfsigned" %}
+    alias /etc/nginx/certs/{{ certificate.name }}.crt;
+    {% else %}
+    alias /etc/nginx/certs/{{ certificate.cert_file | basename }};
+    {% endif %}
+
+    }
+}
+
+{% endif %}
+
+# =========================
 # Services
 # =========================
 
